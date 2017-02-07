@@ -8,7 +8,7 @@ import numpy as np
 
 manifoldList = [
 	#cusp area <5.24
-	's785']
+	'm129']
 
 # manifoldName = 'm129'
 cuspNum = 0
@@ -36,7 +36,6 @@ def getData (manifoldName, cuspNum):
 	xTranslation = reformatNumber(C.all_translations()[cuspNum][1])
 	yTranslation = reformatNumber(C.all_translations()[cuspNum][0])
 	for [i,j] in coprimes(r , xTranslation, yTranslation):
-		points[3].append(str((i,j)))
 		M = snappy.Manifold(manifoldName)
 		M.dehn_fill((i,j),cuspNum)
 		if M.volume() > 0.9:
@@ -50,6 +49,8 @@ def getData (manifoldName, cuspNum):
 				mVolume = abs(reformatNumber(M.volume()))
 				cVolume = abs(reformatNumber(C.volume()))
 				points[2].append(cVolume/ mVolume)
+				points[3].append(str((i,j)))
+
 			except:
 				print 'Construction of ' + str(manifoldName) + str((i,j)) + ' cusp failed.'
 				pass
@@ -122,4 +123,4 @@ layout = go.Layout(
 
 
 fig = go.Figure(data=data, layout=layout)
-py.plot(fig, filename='s785_ratio.html')
+py.plot(fig, filename=manifoldList[0]+'_ratio.html')

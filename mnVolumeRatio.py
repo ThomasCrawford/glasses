@@ -9,15 +9,12 @@ import numpy as np
 manifoldList = [
 	#cusp area <5.24
 	'm125', 'm129', 's596',
-
 	# 's774',	's782',	's785', 'v2124', 'v2355',
-
 	'v3211', 'v3376'
 ]
 
-# manifoldName = 'm129'
 cuspNum = 0
-r = 8
+r = 2
 
 def reformatNumber ( snappyNumber ):
 	imag = float(snappyNumber.imag())
@@ -41,7 +38,6 @@ def getData (manifoldName, cuspNum):
 	xTranslation = reformatNumber(C.all_translations()[cuspNum][1])
 	yTranslation = reformatNumber(C.all_translations()[cuspNum][0])
 	for [i,j] in coprimes(r , xTranslation, yTranslation):
-		points[3].append(str((i,j)))
 		M = snappy.Manifold(manifoldName)
 		M.dehn_fill((i,j),cuspNum)
 		if M.volume() > 0.9:
@@ -55,6 +51,7 @@ def getData (manifoldName, cuspNum):
 				mVolume = abs(reformatNumber(M.volume()))
 				cVolume = abs(reformatNumber(C.volume()))
 				points[2].append(cVolume/ mVolume)
+				points[3].append(str((i,j)))
 			except:
 				print 'Construction of ' + str(manifoldName) + str((i,j)) + ' cusp failed.'
 				pass
@@ -83,16 +80,35 @@ def generateSurface():
 allThePoints = dict([])
 data = []
 
-# data.append(surface)
 
 
-
-
+#generate the data
 for manifoldName in manifoldList:
 	thisManifold = getData(manifoldName, cuspNum)
 	allThePoints.update({manifoldName: thisManifold})
 
+#add in the two cusp manifolds:
+points = [[],[],[],[]]
+for manifoldName in manifoldList:
+	M=snappy.Manifold(manifoldName)
+	C = M.cusp_neighborhood()
+	C.set_displacement(100)
+	xTranslation = reformatNumber(C.all_translations()[0][1])
+	yTranslation = reformatNumber(C.all_translations()[0][0])
+	points[0].append(abs(xTranslation))
+	points[1].append(yTranslation.imag)
+	mVolume = abs(reformatNumber(M.volume()))
+	cVolume = abs(reformatNumber(C.volume()))
+	points[2].append(cVolume/ mVolume)
+	points[3].append(manifoldName)
+print points
+allThePoints.update({'parents': points})
 
+print allThePoints
+
+alsdkfl()
+
+#convert it into scatter3d format
 for manifoldName in manifoldList:
 	x, y, z, surgery = allThePoints[manifoldName]
 	thisManifoldsPoints = go.Scatter3d(
@@ -113,9 +129,10 @@ for manifoldName in manifoldList:
 	)
 	data.append(thisManifoldsPoints)
 
+#add the surface
 data.append(generateSurface())
 
-
+#layout
 layout = go.Layout(
     scene=go.Scene(
         xaxis=go.XAxis(title='m'),
@@ -127,5 +144,5 @@ layout = go.Layout(
 
 
 fig = go.Figure(data=data, layout=layout)
-py.plot(fig, filename='manifoldTest2.html')
+py.plot(fig, filename='mnVolumeRatio.html')
 
